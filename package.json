@@ -1,0 +1,19 @@
+{
+  "name": "captionbot",
+  "version": "1.0.0",
+  "description": "Discord Bot for voice channel captioning",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickdepinet/captionbot.git"
+  },
+  "author": "Nick Depinet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nickdepinet/captionbot/issues"
+  },
+  "homepage": "https://github.com/nickdepinet/captionbot#readme"
+}

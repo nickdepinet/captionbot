@@ -15,5 +15,13 @@
   "bugs": {
     "url": "https://github.com/nickdepinet/captionbot/issues"
   },
-  "homepage": "https://github.com/nickdepinet/captionbot#readme"
+  "homepage": "https://github.com/nickdepinet/captionbot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "@discordjs/opus": "^0.4.0"
+  },
+  "devDependencies": {
+    "tslint": "^6.1.3",
+    "typescript": "^4.2.3"
+  }
 }

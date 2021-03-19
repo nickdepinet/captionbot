@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Secret Config because I'm lazy
+src/.config.json

@@ -54,31 +54,32 @@ client.on('message', async message => {
         if (param === 'start') {
             const connection: VoiceConnection = await message.member.voice.channel.join();
             connection.on('speaking', async (user: User, speaking: Speaking) => {
-                    if (!!user.bot || speaking.bitfield === 0) {
-                        // Don't transcribe
-                        return;
-                    }
-                    const audio: Readable = connection.receiver.createStream(user, { mode: 'pcm' });
-                    let chunks: any = [];
-                    audio.on('data', function(chunk) {
-                        console.log(`Received ${chunk.length} bytes of data.`);
-                        chunks.push(chunk);
-                    });
-                    audio.on('end', async () => {
-                        let buffer: Buffer = await convert_audio(Buffer.concat(chunks));
-                        let rStream: Readable = new Readable();
-                        rStream.push(buffer)
-                        rStream.push(null)
-                        for await (const data of rStream) {
-                            console.log(`Iterating ${data.length} bytes of data.`);
-                            const end_of_speech = rec.acceptWaveform(data);
-                            if (end_of_speech) {
-                                console.log("partial: " + rec.result());
-                            }
+                const displayName: string = connection.channel.members.find(o => o.user.username === user.username)?.displayName ?? user.username;
+                if (!!user.bot || speaking.bitfield === 0) {
+                    // Don't transcribe
+                    return;
+                }
+                const audio: Readable = connection.receiver.createStream(user, { mode: 'pcm' });
+                let chunks: any = [];
+                audio.on('data', function(chunk) {
+                    console.log(`Received ${chunk.length} bytes of data.`);
+                    chunks.push(chunk);
+                });
+                audio.on('end', async () => {
+                    let buffer: Buffer = await convert_audio(Buffer.concat(chunks));
+                    let rStream: Readable = new Readable();
+                    rStream.push(buffer)
+                    rStream.push(null)
+                    for await (const data of rStream) {
+                        console.log(`Iterating ${data.length} bytes of data.`);
+                        const end_of_speech = rec.acceptWaveform(data);
+                        if (end_of_speech) {
+                            console.log("partial: " + rec.result());
                         }
-                        let result: RecognizedResult = JSON.parse(rec.finalResult(rec));
-                        message.channel.send(user.username + ": " + result.text);
-                    });
+                    }
+                    let result: RecognizedResult = JSON.parse(rec.finalResult(rec));
+                    message.channel.send(displayName + ": " + result.text);
+                });
                 });
         } else if (param === 'stop') {
             await message.member?.voice.channel?.leave();

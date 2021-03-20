@@ -1,7 +1,9 @@
 declare module 'vosk';
 
-import { Client, VoiceConnection } from "discord.js";
+import { Client, GuildMember, VoiceConnection, Speaking, User } from "discord.js";
 import * as fs from "fs";
+import { connect } from "node:http2";
+import { measureMemory } from "node:vm";
 import { Readable } from "stream";
 import * as Vosk from "vosk";
 import * as config from "./.config.json";
@@ -51,29 +53,37 @@ client.on('message', async message => {
     if (command === 'caption' && message.member?.voice.channel) {
         if (param === 'start') {
             const connection: VoiceConnection = await message.member.voice.channel.join();
-            const audio: Readable = connection.receiver.createStream(message, { mode: 'pcm' });
-            let chunks: any = [];
-            audio.on('data', function(chunk) {
-                console.log(`Received ${chunk.length} bytes of data.`);
-                chunks.push(chunk);
-            });
-            audio.on('end', async () => {
-                let buffer: Buffer = await convert_audio(Buffer.concat(chunks));
-                let rStream: Readable = new Readable();
-                rStream._read = () => {} // _read is required but you can noop it
-                rStream.push(buffer)
-                rStream.push(null)
-                for await (const data of rStream) {
-                    const end_of_speech = rec.acceptWaveform(data);
-                    if (end_of_speech) {
-                        console.log("partial: " + rec.result());
+            connection.on('speaking', async (user: User, speaking: Speaking) => {
+                    if (!!user.bot || speaking.bitfield === 0) {
+                        // Don't transcribe
+                        return;
                     }
-                }
-                let result: RecognizedResult = JSON.parse(rec.finalResult(rec));
-                message.channel.send(message.member?.user.username + ": " + result.text);
-            });
+                    const audio: Readable = connection.receiver.createStream(user, { mode: 'pcm' });
+                    let chunks: any = [];
+                    audio.on('data', function(chunk) {
+                        console.log(`Received ${chunk.length} bytes of data.`);
+                        chunks.push(chunk);
+                    });
+                    audio.on('end', async () => {
+                        let buffer: Buffer = await convert_audio(Buffer.concat(chunks));
+                        let rStream: Readable = new Readable();
+                        rStream.push(buffer)
+                        rStream.push(null)
+                        for await (const data of rStream) {
+                            console.log(`Iterating ${data.length} bytes of data.`);
+                            const end_of_speech = rec.acceptWaveform(data);
+                            if (end_of_speech) {
+                                console.log("partial: " + rec.result());
+                            }
+                        }
+                        let result: RecognizedResult = JSON.parse(rec.finalResult(rec));
+                        message.channel.send(user.username + ": " + result.text);
+                    });
+                });
         } else if (param === 'stop') {
-            await message.member.voice.channel.leave();
+            await message.member?.voice.channel?.leave();
         }
+    } else if (command === 'caption' && !message.member?.voice.channel) {
+        message.reply("Join a voice channel first.");
     }
 });

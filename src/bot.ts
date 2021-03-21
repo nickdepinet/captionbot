@@ -78,7 +78,9 @@ client.on('message', async message => {
                         }
                     }
                     let result: RecognizedResult = JSON.parse(rec.finalResult(rec));
-                    message.channel.send(displayName + ": " + result.text);
+                    if (!!result.text && result.text != '') {
+                        message.channel.send(displayName + ": " + result.text);
+                    }
                 });
                 });
         } else if (param === 'stop') {

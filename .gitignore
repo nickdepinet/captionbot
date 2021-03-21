@@ -108,3 +108,4 @@ src/.config.json
 
 # Don't distribute the vosk model in the repo - it's big and we don't want to mix distribution licenses (Apache 2.0 / MIT)
 model
+model-small

@@ -7,7 +7,6 @@ import { Client, VoiceConnection, Speaking, User } from "discord.js";
 import * as dotenv from "dotenv";
 import { Readable } from "stream";
 import * as Vosk from "vosk";
-import * as config from "./.config.json";
 
 dotenv.config();
 

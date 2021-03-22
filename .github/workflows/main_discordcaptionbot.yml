@@ -25,12 +25,17 @@ jobs:
       run: |
         npm install
         npm run build --if-present
-        npm run test --if-present
 
-    - name: 'Deploy to Azure Web App'
-      uses: azure/webapps-deploy@v2
+    - name: SSH and deploy node app
+      uses: appleboy/ssh-action@master
       with:
-        app-name: 'discordcaptionbot'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_3d971f4dd49c4093a7e57c3a4626fe2c }}
-        package: .
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd ~/captionbot
+          git pull origin master
+          npm install
+          npm build
+          pm2 restart bot

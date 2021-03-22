@@ -1,9 +1,9 @@
-declare module 'vosk';
+/* 
+Copyright (c) 2021 Nick Depinet
+See LICENSE
+*/
 
-import { Client, GuildMember, VoiceConnection, Speaking, User } from "discord.js";
-import * as fs from "fs";
-import { connect } from "node:http2";
-import { measureMemory } from "node:vm";
+import { Client, VoiceConnection, Speaking, User } from "discord.js";
 import { Readable } from "stream";
 import * as Vosk from "vosk";
 import * as config from "./.config.json";
@@ -52,9 +52,11 @@ client.on('message', async message => {
     const param = args.shift()?.toLowerCase();
     if (command === 'caption' && message.member?.voice.channel) {
         if (param === 'start') {
+            // TODO :: we should eventually self-disconnect on no-activity.
             const connection: VoiceConnection = await message.member.voice.channel.join();
             connection.on('speaking', async (user: User, speaking: Speaking) => {
                 const displayName: string = connection.channel.members.find(o => o.user.username === user.username)?.displayName ?? user.username;
+                var transcription: string = '';
                 if (!!user.bot || speaking.bitfield === 0) {
                     // Don't transcribe
                     return;
@@ -62,7 +64,7 @@ client.on('message', async message => {
                 const audio: Readable = connection.receiver.createStream(user, { mode: 'pcm' });
                 let chunks: any = [];
                 audio.on('data', function(chunk) {
-                    console.log(`Received ${chunk.length} bytes of data.`);
+                    // console.log(`Received ${chunk.length} bytes of data.`);
                     chunks.push(chunk);
                 });
                 audio.on('end', async () => {
@@ -71,18 +73,28 @@ client.on('message', async message => {
                     rStream.push(buffer)
                     rStream.push(null)
                     for await (const data of rStream) {
-                        console.log(`Iterating ${data.length} bytes of data.`);
+                        console.log(`Accepting ${data.length} bytes of data.`);
                         const end_of_speech = rec.acceptWaveform(data);
                         if (end_of_speech) {
-                            console.log("partial: " + rec.result());
+                            let partialResult: RecognizedResult = JSON.parse(rec.result());
+                            if (!!partialResult.text && partialResult.text != '') {
+                                console.log("partial result found for " + displayName);
+                                transcription = partialResult.text;
+                            }
                         }
                     }
                     let result: RecognizedResult = JSON.parse(rec.finalResult(rec));
                     if (!!result.text && result.text != '') {
-                        message.channel.send(displayName + ": " + result.text);
+                        console.log("final result found for " + displayName);
+                        transcription = result.text;
+                    }
+                    if (transcription != '') {
+                        message.channel.send(displayName + ": " + transcription);
+                    } else {
+                        console.log("no non-empty results found for " + displayName);
                     }
                 });
-                });
+            });
         } else if (param === 'stop') {
             await message.member?.voice.channel?.leave();
         }

@@ -35,6 +35,16 @@ Discord bot for captioning voice chats
     ```
 
 # Usage
-Coming soon.
+With the bot added to your server, give the bot a role with proper permissions to join the voice channels you want to use it in.
+
+Starting captioning:
+Join the voice channel you want to caption and type 
+`#!caption start (or your prefix of choice instead of #!)`
+captionbot will begin transcribing audio into the text channel you type the command into.
+
+When done captioning:
+Stay in your voice channel (or rejoin), and type
+`#!caption stop`
+this will disconnect the bot from your channel. Auto-disconnect is in progress.
 
 

@@ -1,17 +1,17 @@
 # captionbot
 Discord bot for captioning voice chats
 
+[![build and deploy to Azure - discordcaptionbot](https://github.com/nickdepinet/captionbot/actions/workflows/main_discordcaptionbot.yml/badge.svg)](https://github.com/nickdepinet/captionbot/actions/workflows/main_discordcaptionbot.yml)
+
 # Setup
 
 1) Register your bot with discord, obtain a bot API key, and invite the bot to your server.
 
-2) Create your configuration file, src/.config.json - this contains your API key and command prefix
+2) Create your configuration file, .env - this contains your API key and command prefix
 
     ```
-    {
-        "discord-api-key": "discord-api-key",
-        "prefix": "#!"
-    }
+    DISCORD_API_KEY=discord_api_key_here
+    PREFIX=#!
     ```
 3) Download the vosk voice recognition model unzip, and copy to the root captionbot folder
     ```

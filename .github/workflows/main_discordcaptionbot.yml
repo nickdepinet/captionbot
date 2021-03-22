@@ -35,7 +35,6 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           cd ~/captionbot
-          git pull origin master
+          git pull
           npm install
-          npm build
-          pm2 restart bot
+          npm run build

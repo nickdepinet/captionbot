@@ -4,18 +4,21 @@ See LICENSE
 */
 
 import { Client, VoiceConnection, Speaking, User } from "discord.js";
+import * as dotenv from "dotenv";
 import { Readable } from "stream";
 import * as Vosk from "vosk";
 import * as config from "./.config.json";
 
+dotenv.config();
+
 const client = new Client();
-const prefix = config.prefix;
+const prefix = process.env.PREFIX ?? '#!';
 
 client.once('ready', () => {
     console.log('Ready!');
 });
 
-var apiKey = config["discord-api-key"];
+var apiKey = process.env.DISCORD_API_KEY ?? '';
 client.login(apiKey);
 
 const model = new Vosk.Model("model");
